@@ -1,0 +1,17 @@
+-main ApplicationMain 
+-lib openfl
+-lib openfl-native
+-lib flixel
+-lib openfl-native
+-cp source
+-cp C:\HaxeToolkit/openfl/1,0,4/
+-cp C:\HaxeToolkit/openfl-native/1,0,4/
+-D tools=1
+-D openfl_ver=1.0.4
+-D openfl
+-D android
+-D mobile
+-cp export/android/haxe
+-cpp export/android/obj
+--macro allowPackage("flash")
+-D android

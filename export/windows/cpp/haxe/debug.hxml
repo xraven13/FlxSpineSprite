@@ -1,0 +1,18 @@
+-main ApplicationMain 
+-lib openfl
+-lib openfl-native
+-lib flixel
+-lib openfl-native
+-cp source
+-cp C:\HaxeToolkit/openfl/1,0,4/
+-cp C:\HaxeToolkit/openfl-native/1,0,4/
+-D no_console=1
+-D tools=1
+-D openfl_ver=1.0.4
+-D openfl
+-D windows
+-D desktop
+-cpp export/windows/cpp/obj
+-cp export/windows/cpp/haxe
+--macro allowPackage("flash")
+-debug
