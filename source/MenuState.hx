@@ -14,10 +14,11 @@ import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.util.FlxMath;
 import haxe.Log;
-import pgr.gconsole.GameConsole;
 import spinehx.Animation;
 import spinehx.Bone;
 import spinehx.BoneData;
+import testclasses.SpineBoyTest;
+ 
  
  
 
@@ -45,33 +46,15 @@ class MenuState extends FlxState
 	 
  
 			 
-		spineSprite = new FlxSpineSprite("assets/spineboy.atlas", "assets/", "spineboy", "assets/spineboy.json", 0, 0, 600, 600 );
+		spineSprite = new SpineBoyTest( FlxSpineSprite.readSkeletonData( "spineboy", "assets/" ), 0, 0, 600, 600 );
 		add( spineSprite );
-		 
-	 	GameConsole.init();
-		GameConsole.log("This text will be logged.");
+		  
 	  
 	 
 		
 	} 
 
- 
-	
-	private function log( data:Dynamic ):Void
-	{
-		if ( FlxG.keys.pressed("SPACE") )
-		{
-			GameConsole.log( data );
-		}
-	}
-	
-	private function logs( array:Array<Dynamic>):Void
-	{
-		for ( i in 0...array.length )
-		{
-			log( array[i] );
-		}
-	}
+  
 	  
 	override public function update():Void
 	{

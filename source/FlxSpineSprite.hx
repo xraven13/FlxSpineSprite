@@ -9,7 +9,7 @@ import flixel.system.input.FlxMapObject;
 import flixel.util.FlxPoint;
 import flixel.util.FlxSpriteUtil;
 import openfl.Assets;
-import pgr.gconsole.GameConsole;
+ 
 import spinehx.AnimationState;
 import spinehx.AnimationStateData;
 import spinehx.atlas.TextureAtlas;
@@ -28,42 +28,27 @@ import spinehx.SkeletonJson;
 class FlxSpineSprite extends FlxSprite
 {
  
-	private var spineAtlas:TextureAtlas;
+ 
     public var skeleton:Skeleton;
+	public var skeletonData:SkeletonData;
     public var state:AnimationState;
-	private var stateData:AnimationStateData;
+	public var stateData:AnimationStateData;
 	
 	
 	public var renderer:SkeletonRenderer;
     public var debugRenderer:SkeletonRendererDebug;
  
-	public function new( packFileData:String, imagesDir:String, skeletonDataName:String, skeletonDataPath:String,  X:Float = 0, Y:Float = 0, Width:Int = 0, Height:Int = 0 ) 
+	public function new( skeletonData:SkeletonData,  X:Float = 0, Y:Float = 0, Width:Int = 0, Height:Int = 0 ) 
 	{
 		super( X, Y );
 	
-		/*spineAtlas = TextureAtlas.create(Assets.getText("assets/spineboy.atlas"), "assets/", new BitmapDataTextureLoader());
-        var json:SkeletonJson = SkeletonJson.create(spineAtlas);
-        var skeletonData:SkeletonData = json.readSkeletonData("spineboy",  Assets.getText("assets/spineboy.json"));*/
-
-		spineAtlas = TextureAtlas.create(Assets.getText( packFileData ), imagesDir, new BitmapDataTextureLoader());
-        var json:SkeletonJson = SkeletonJson.create(spineAtlas);
-		json.setScale( 0.5 );
-        var skeletonData:SkeletonData = json.readSkeletonData( skeletonDataName,  Assets.getText( skeletonDataPath ) );
+		this.skeletonData = skeletonData;
 		
-        // Define mixing between animations.
         stateData = new AnimationStateData(skeletonData);
-        stateData.setMixByName("walk", "jump", 0.2);
-        stateData.setMixByName("jump", "walk", 0.4);
-        stateData.setMixByName("jump", "jump", 0.2);
 		
-	    
-
         state = new AnimationState(stateData);
-        state.setAnimationByName("walk", true);
 
         skeleton = Skeleton.create(skeletonData);
-	    skeleton.setX(150);
-        skeleton.setY(360); 
         skeleton.setFlipY(true); 
 		
         skeleton.updateWorldTransform();
@@ -73,12 +58,7 @@ class FlxSpineSprite extends FlxSprite
         renderer = new SkeletonRenderer(skeleton);
         debugRenderer = new SkeletonRendererDebug(skeleton);
 		renderer.visible = debugRenderer.visible = false;
-	 
-        //addEventListener(Event.ENTER_FRAME, render);
-        //addEventListener(Event.ADDED_TO_STAGE, added);
-		
-		
-		
+ 
 		if ( Width == 0 )
 		{
 			Width = FlxG.width;
@@ -98,6 +78,15 @@ class FlxSpineSprite extends FlxSprite
 		lastOffset  = new FlxPoint( offset.x, offset.y );
 	 
 	
+	}
+	
+	public static function readSkeletonData( dataName:String, dataPath:String, scale:Float = 1  ):SkeletonData
+	{
+		var spineAtlas:TextureAtlas = TextureAtlas.create(Assets.getText( dataPath + dataName + ".atlas" ), dataPath, new BitmapDataTextureLoader());
+        var json:SkeletonJson = SkeletonJson.create(spineAtlas);
+		json.setScale( scale );
+        var skeletonData:SkeletonData = json.readSkeletonData( dataName,  Assets.getText( dataPath + dataName + ".json") );
+		return skeletonData;
 	}
 	
  
@@ -139,21 +128,24 @@ class FlxSpineSprite extends FlxSprite
 	}
 	
 	
+	//extend this to add animation logic
+	private function handleAnimations():Void
+	{
+		
+	}
+	
+	public var timeScale:Float = 1;
 	private var lastTime:Float = 0.0;
+	private var delta:Float = 0;
 	public function render():Void 
 	{
 		
-        var delta = (haxe.Timer.stamp() - lastTime) / 3;
+        delta = (haxe.Timer.stamp() - lastTime) * timeScale;
         lastTime = haxe.Timer.stamp();
         state.update(delta);
         state.apply(skeleton);
 		
-        if (state.getAnimation().getName() == "walk") {
-            // After one second, change the current animation. Mixing is done by AnimationState for you.
-            if (state.getTime() > 2) state.setAnimationByName("jump", false);
-        } else {
-            if (state.getTime() > 1) state.setAnimationByName("walk", true);
-        }
+        handleAnimations();
 
         skeleton.updateWorldTransform();
 
@@ -202,9 +194,9 @@ class FlxSpineSprite extends FlxSprite
 	private var transformMatrix:Matrix;
 	private function drawOnFlxSprite( renderer:Sprite ):Void
 	{
-		var translateX:Float = (  width / 2  - renderer.width / 2 ) / 2 ;
+		var translateX:Float =   (  width / 2  - renderer.width / 2 ) / 2   ;
 		var translateY:Float =  ( height / 2 - renderer.height / 2 ) / 2;
-		
+ 
 		transformMatrix.identity();
 		transformMatrix.translate( translateX, translateY );
 		
