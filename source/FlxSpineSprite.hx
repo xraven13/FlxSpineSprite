@@ -73,8 +73,6 @@ class FlxSpineSprite extends FlxSprite
 		
 		makeGraphic( Width, Height );
 		
-		antialiasing = FlxG.antialiasByDefault;
-		
 		maskScale = new FlxPoint( 1, 1 );
 		maskOffset = new FlxPoint( 0, 0 );
 		lastOffset = new FlxPoint( offset.x, offset.y );
