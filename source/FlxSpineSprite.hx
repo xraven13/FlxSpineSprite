@@ -32,9 +32,12 @@ class FlxSpineSprite extends FlxSprite
 	public var state:AnimationState;
 	public var stateData:AnimationStateData;
 	
+	private var transformMatrix:Matrix;
 	public var renderer:SkeletonRenderer;
+	
 	#if !FLX_NO_DEBUG
-	public var cycleDrawingModeKey:String = "SPACE";
+	public var debugDrawMode:Int = 0;
+	public var cycleDrawModeKey:String = "SPACE";
 	public var debugRenderer:SkeletonRendererDebug;
 	#end
 	
@@ -119,69 +122,42 @@ class FlxSpineSprite extends FlxSprite
 		state.apply(skeleton);
 		skeleton.updateWorldTransform();
 		
+		// set fill color
+		var fillColor = FlxColor.TRANSPARENT;
+		
+		// calculate debug fill color
 		#if !FLX_NO_DEBUG
-		if ( FlxG.keys.justPressed(cycleDrawingModeKey) )
-		{
-			drawingMode++;
-			if ( drawingMode > 2 ) drawingMode = 0;
-		}
+		if ( FlxG.keys.justPressed(cycleDrawModeKey) )
+			debugDrawMode = (debugDrawMode + 1) % 4;
+		fillColor = (debugDrawMode == 0 || debugDrawMode == 1) ? FlxColor.TRANSPARENT : FlxColor.NAVY_BLUE;
+		#end
 		
 		// clear the bitmap data
-		var fillColor = (drawingMode == 0 || drawingMode == 1) ? FlxColor.TRANSPARENT : FlxColor.NAVY_BLUE;
 		#if flash
 		framePixels.fillRect( framePixels.rect, fillColor);
 		#else
 		_node.item.fillRect( _node.item.rect, fillColor );
 		#end
 		
-		// always draw normal renderer so width and height are properly calculated
+		// draw sprite
 		renderer.draw();
-		if (drawingMode == 0 || drawingMode == 1)
-			drawOnFlxSprite( renderer );
+		drawToFlxSprite( renderer );
 		
-		if (drawingMode == 0 || drawingMode == 2)
+		// draw debug sprite
+		#if !FLX_NO_DEBUG
+		if (debugDrawMode == 0 || debugDrawMode == 2)
 		{
 			debugRenderer.draw();
-			drawOnFlxSprite( debugRenderer );
+			drawToFlxSprite( debugRenderer );
 		}
-		#else
-		// clear the bitmap data
-		#if flash
-		framePixels.fillRect( framePixels.rect, FlxColor.TRANSPARENT);
-		#else
-		_node.item.fillRect( _node.item.rect, FlxColor.TRANSPARENT );
-		#end
-		renderer.draw();
-		drawOnFlxSprite( renderer );
 		#end
 		
 		// overlap & collission mask
 		updateMask();
 	}
 	
-	// to make overlap and collision work
-	private var overlapMask:FlxSprite;
-	private var maskScale:FlxPoint ;
-	private var maskOffset:FlxPoint ;
-	private var lastOffset:FlxPoint ;
-	public function setMask( scaleX:Float = 1, scaleY:Float = 1, offsetX:Float = 0, offsetY:Float = 0 ):Void
-	{
-		maskScale.make( scaleX, scaleY );
-		maskOffset.make( offsetX, offsetY );
-	}
-	private function updateMask():Void
-	{
-		width = maskScale.x * renderer.width;
-		height = maskScale.y * renderer.height;
-		lastOffset.x = offset.x;
-		lastOffset.y = offset.y;
-		offset.x += maskOffset.x;
-		offset.y += maskOffset.y;
-	}
-	
 	// adjusting position of sprite depending on transformations
-	private var transformMatrix:Matrix;
-	private function drawOnFlxSprite( renderer:Sprite ):Void
+	private function drawToFlxSprite( renderer:Sprite ):Void
 	{
 		// TODO: position spine sprite in center of framePixels container
 		var translateX:Float = (renderer.width / 2);
@@ -199,15 +175,23 @@ class FlxSpineSprite extends FlxSprite
 		#end
 	}
 	
-	// Debug renderer functionality
-	#if !FLX_NO_DEBUG
-	private var drawingMode:Int = 0;
-	private var DRAW_WITH_DEBUG:Int = 0;
-	private var DRAW_WITHOUT_DEBUG:Int = 1;
-	private var DRAW_DEBUG_ONLY:Int = 2;
-	public function setDrawingMode( drawWithDebugOrDrawWithoutDebugOrDrawDebugOnly:Int ):Void
+	// to make overlap and collision work
+	private var overlapMask:FlxSprite;
+	private var maskScale:FlxPoint;
+	private var maskOffset:FlxPoint;
+	private var lastOffset:FlxPoint;
+	public function setMask( scaleX:Float = 1, scaleY:Float = 1, offsetX:Float = 0, offsetY:Float = 0 ):Void
 	{
-		drawingMode = drawWithDebugOrDrawWithoutDebugOrDrawDebugOnly;
+		maskScale.make( scaleX, scaleY );
+		maskOffset.make( offsetX, offsetY );
 	}
-	#end
+	private function updateMask():Void
+	{
+		width = maskScale.x * renderer.width;
+		height = maskScale.y * renderer.height;
+		lastOffset.x = offset.x;
+		lastOffset.y = offset.y;
+		offset.x += maskOffset.x;
+		offset.y += maskOffset.y;
+	}
 }
