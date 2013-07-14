@@ -18,9 +18,6 @@ import spinehx.Animation;
 import spinehx.Bone;
 import spinehx.BoneData;
 import testclasses.SpineBoyTest;
- 
- 
- 
 
 /**
  * A FlxState which can be used for the game's menu.
@@ -47,7 +44,7 @@ class MenuState extends FlxState
 		
 		FlxG.timeScale = 0.66;
 		
-		var instructions = new FlxText(0, 0, 250, "Space: Change Display Type\nMove: Arrows\nRotate: A/D\nScale: F/G\nMove Origin: F/G", 12);
+		var instructions = new FlxText(0, 0, 250, "Change Display: Space Bar\nMove: Arrows\nRotate: A/D\nScale: F/G\nMove Origin: F/G", 12);
 		add(instructions);
 	}
 	

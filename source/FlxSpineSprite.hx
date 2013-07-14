@@ -1,30 +1,29 @@
 package ;
-import flash.display.BitmapData;
-import flash.display.Sprite;
-import flash.filters.GlowFilter;
-import flash.geom.Matrix;
+
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.system.input.FlxMapObject;
 import flixel.util.FlxPoint;
 import flixel.util.FlxColor;
-import flixel.util.FlxSpriteUtil;
+
+import flash.geom.Matrix;
+import flash.display.Sprite;
+import flash.display.BitmapData;
 import openfl.Assets;
- 
-import spinehx.AnimationState;
-import spinehx.AnimationStateData;
-import spinehx.atlas.TextureAtlas;
+
 import spinehx.Bone;
-import spinehx.platform.nme.BitmapDataTextureLoader;
-import spinehx.platform.nme.renderers.SkeletonRenderer;
-import spinehx.platform.nme.renderers.SkeletonRendererDebug;
 import spinehx.Skeleton;
 import spinehx.SkeletonData;
 import spinehx.SkeletonJson;
+import spinehx.AnimationState;
+import spinehx.AnimationStateData;
+import spinehx.atlas.TextureAtlas;
+import spinehx.platform.nme.BitmapDataTextureLoader;
+import spinehx.platform.nme.renderers.SkeletonRenderer;
+import spinehx.platform.nme.renderers.SkeletonRendererDebug;
 
 /**
- * ...
- * @author ...
+ * Special Sprite that can play Animations built with Spine editor: http://esotericsoftware.com/
+ * @author Kuris Makku & Sam Batista
  */
 class FlxSpineSprite extends FlxSprite
 {
@@ -129,14 +128,17 @@ class FlxSpineSprite extends FlxSprite
 		
 		// clear the bitmap data
 		var fillColor = (drawingMode == 0 || drawingMode == 1) ? FlxColor.TRANSPARENT : FlxColor.NAVY_BLUE;
+		#if flash
 		framePixels.fillRect( framePixels.rect, fillColor);
+		#else
+		_node.item.fillRect( _node.item.rect, fillColor );
+		#end
 		
 		// always draw normal renderer so width and height are properly calculated
 		renderer.draw();
 		if (drawingMode == 0 || drawingMode == 1)
-		{
 			drawOnFlxSprite( renderer );
-		}
+		
 		if (drawingMode == 0 || drawingMode == 2)
 		{
 			debugRenderer.draw();
@@ -144,7 +146,11 @@ class FlxSpineSprite extends FlxSprite
 		}
 		#else
 		// clear the bitmap data
+		#if flash
 		framePixels.fillRect( framePixels.rect, FlxColor.TRANSPARENT);
+		#else
+		_node.item.fillRect( _node.item.rect, FlxColor.TRANSPARENT );
+		#end
 		renderer.draw();
 		drawOnFlxSprite( renderer );
 		#end
@@ -184,7 +190,13 @@ class FlxSpineSprite extends FlxSprite
 		transformMatrix.identity();
 		transformMatrix.translate( translateX, translateY );
 		
+		#if flash
 		framePixels.draw( renderer, transformMatrix );
+		#else
+		// TODO: Why isn't this rendering the animated sprite on native targets?
+		_node.item.draw( renderer, transformMatrix );
+		updateAtlasInfo(true);
+		#end
 	}
 	
 	// Debug renderer functionality
