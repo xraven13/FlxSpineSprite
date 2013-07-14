@@ -31,10 +31,7 @@ class FlxSpineSprite extends FlxSprite
 	public var skeletonData:SkeletonData;
 	public var state:AnimationState;
 	public var stateData:AnimationStateData;
-	
-	private var transformMatrix:Matrix;
 	public var renderer:SkeletonRenderer;
-	
 	#if !FLX_NO_DEBUG
 	public var debugDrawMode:Int = 0;
 	public var cycleDrawModeKey:String = "SPACE";
@@ -76,7 +73,6 @@ class FlxSpineSprite extends FlxSprite
 		
 		makeGraphic( Width, Height );
 		
-		transformMatrix = new Matrix();
 		antialiasing = FlxG.antialiasByDefault;
 		
 		maskScale = new FlxPoint( 1, 1 );
@@ -136,7 +132,7 @@ class FlxSpineSprite extends FlxSprite
 		#if flash
 		framePixels.fillRect( framePixels.rect, fillColor);
 		#else
-		_node.item.fillRect( _node.item.rect, fillColor );
+		_pixels.fillRect( _pixels.rect, fillColor );
 		#end
 		
 		// draw sprite
@@ -145,7 +141,7 @@ class FlxSpineSprite extends FlxSprite
 		
 		// draw debug sprite
 		#if !FLX_NO_DEBUG
-		if (debugDrawMode == 0 || debugDrawMode == 2)
+		if (debugDrawMode == 1 || debugDrawMode == 2)
 		{
 			debugRenderer.draw();
 			drawToFlxSprite( debugRenderer );
@@ -160,17 +156,19 @@ class FlxSpineSprite extends FlxSprite
 	private function drawToFlxSprite( renderer:Sprite ):Void
 	{
 		// TODO: position spine sprite in center of framePixels container
+		// TODO2: getting width / height of Sprite renderer is slow, find a way position sprite without accessing width / height
 		var translateX:Float = (renderer.width / 2);
 		var translateY:Float = renderer.height;
 		
-		transformMatrix.identity();
-		transformMatrix.translate( translateX, translateY );
+		_matrix.identity();
+		_matrix.translate( translateX, translateY );
 		
 		#if flash
-		framePixels.draw( renderer, transformMatrix );
+		framePixels.draw( renderer, _matrix );
 		#else
 		// TODO: Why isn't this rendering the animated sprite on native targets?
-		_node.item.draw( renderer, transformMatrix );
+		_pixels.draw( renderer, _matrix );
+		resetFrameBitmapDatas();
 		updateAtlasInfo(true);
 		#end
 	}
