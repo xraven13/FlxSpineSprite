@@ -127,6 +127,8 @@ class FlxSpine extends FlxSprite
 	{
 		var drawOrder:Array<Slot> = skeleton.drawOrder;
 		var flipX:Int = (skeleton.flipX) ? -1 : 1;
+		var flipY:Int = (skeleton.flipY) ? 1 : -1;
+		var flip:Int = flipX * flipY;
 		for (slot in drawOrder) 
 		{
 			var attachment:Attachment = slot.attachment;
@@ -145,9 +147,9 @@ class FlxSpine extends FlxSprite
 				wrapper.x = bone.worldX + x * bone.m00 + y * bone.m01 + this.x - wrapper.frameWidth * 0.5;
 				wrapper.y = bone.worldY + x * bone.m10 + y * bone.m11 + this.y - wrapper.frameHeight * 0.5;
 				
-                wrapper.angle = (-(bone.worldRotation + regionAttachment.rotation) + wrapperAngle) * flipX;
+                wrapper.angle = (-(bone.worldRotation + regionAttachment.rotation) + wrapperAngle) * flip;
                 wrapper.scale.x = (bone.worldScaleX + regionAttachment.scaleX - 1) * flipX;
-                wrapper.scale.y = (bone.worldScaleY + regionAttachment.scaleY - 1);
+                wrapper.scale.y = (bone.worldScaleY + regionAttachment.scaleY - 1) * flipY;
 				wrapper.antialiasing = FlxG.antialiasByDefault;
                 wrapper.visible = true;
 				wrapper.draw();
