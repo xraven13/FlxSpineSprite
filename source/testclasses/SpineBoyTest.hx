@@ -13,27 +13,22 @@ class SpineBoyTest extends FlxSpineSprite
 	{
 		super( skeletonData, X, Y, Width, Height );
 		
-		skeleton.setX(150);
-        skeleton.setY(360); 
-		
 		stateData.setMixByName("walk", "jump", 0.2);
-        stateData.setMixByName("jump", "walk", 0.4);
-        stateData.setMixByName("jump", "jump", 0.2);
+		stateData.setMixByName("jump", "walk", 0.4);
+		stateData.setMixByName("jump", "jump", 0.2);
 		
-        state.setAnimationByName("walk", true);
-		
-		timeScale = 0.333;
-		
+		state.setAnimationByName("walk", true);
 	}
 	
-	override private function handleAnimations():Void
+	override public function update():Void
 	{
+		super.update();
 		if (state.getAnimation().getName() == "walk") {
-            // After one second, change the current animation. Mixing is done by AnimationState for you.
-            if (state.getTime() > 2) state.setAnimationByName("jump", false);
-        } else {
-            if (state.getTime() > 1) state.setAnimationByName("walk", true);
-        }
+			// After one second, change the current animation. Mixing is done by AnimationState for you.
+			if (state.getTime() > 2) state.setAnimationByName("jump", false);
+		} else {
+			if (state.getTime() > 1) state.setAnimationByName("walk", true);
+		}
 		
 		if ( FlxG.mouse.justPressed() )
 		{
@@ -41,5 +36,4 @@ class SpineBoyTest extends FlxSpineSprite
 			state.addAnimationByNameSimple("walk", true);
 		}
 	}
-	
 }

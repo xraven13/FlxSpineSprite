@@ -1,185 +1,188 @@
 package ;
-import flash.display.BitmapData;
-import flash.display.Sprite;
-import flash.filters.GlowFilter;
-import flash.geom.Matrix;
+
 import flixel.FlxG;
 import flixel.FlxSprite;
-import flixel.system.input.FlxMapObject;
 import flixel.util.FlxPoint;
-import flixel.util.FlxSpriteUtil;
+import flixel.util.FlxColor;
+
+import flash.geom.Matrix;
+import flash.display.Sprite;
+import flash.display.BitmapData;
 import openfl.Assets;
- 
-import spinehx.AnimationState;
-import spinehx.AnimationStateData;
-import spinehx.atlas.TextureAtlas;
+
 import spinehx.Bone;
-import spinehx.platform.nme.BitmapDataTextureLoader;
-import spinehx.platform.nme.renderers.SkeletonRenderer;
-import spinehx.platform.nme.renderers.SkeletonRendererDebug;
 import spinehx.Skeleton;
 import spinehx.SkeletonData;
 import spinehx.SkeletonJson;
+import spinehx.AnimationState;
+import spinehx.AnimationStateData;
+import spinehx.atlas.TextureAtlas;
+import spinehx.platform.nme.BitmapDataTextureLoader;
+import spinehx.platform.nme.renderers.SkeletonRenderer;
+import spinehx.platform.nme.renderers.SkeletonRendererDebug;
 
 /**
- * ...
- * @author ...
+ * Special Sprite that can play Animations built with Spine editor: http://esotericsoftware.com/
+ * @author Kuris Makku & Sam Batista
  */
 class FlxSpineSprite extends FlxSprite
 {
- 
- 
-    public var skeleton:Skeleton;
+	public var skeleton:Skeleton;
 	public var skeletonData:SkeletonData;
-    public var state:AnimationState;
+	public var state:AnimationState;
 	public var stateData:AnimationStateData;
-	
-	
 	public var renderer:SkeletonRenderer;
-    public var debugRenderer:SkeletonRendererDebug;
- 
+	#if !FLX_NO_DEBUG
+	public var debugDrawMode:Int = 0;
+	public var cycleDrawModeKey:String = "SPACE";
+	public var debugRenderer:SkeletonRendererDebug;
+	#end
+	
+	/**
+	 * Instantiate a new Spine Sprite.
+	 * @param	skeletonData	Animation data from Spine (.json .skel .png), get it like this: FlxSpineSprite.readSkeletonData( "mySpriteData", "assets/" );
+	 * @param	X				The initial X position of the sprite.
+	 * @param	Y				The initial Y position of the sprite.
+	 * @param	Width			The maximum width of this sprite (avoid very large sprites since they are performance intensive).
+	 * @param	Height			The maximum height of this sprite (avoid very large sprites since they are performance intensive).
+	 */
 	public function new( skeletonData:SkeletonData,  X:Float = 0, Y:Float = 0, Width:Int = 0, Height:Int = 0 ) 
 	{
 		super( X, Y );
-	
+		
 		this.skeletonData = skeletonData;
 		
-        stateData = new AnimationStateData(skeletonData);
+		stateData = new AnimationStateData(skeletonData);
+		state = new AnimationState(stateData);
 		
-        state = new AnimationState(stateData);
-
-        skeleton = Skeleton.create(skeletonData);
-        skeleton.setFlipY(true); 
+		skeleton = Skeleton.create(skeletonData);
+		skeleton.setFlipY( true );
+		skeleton.updateWorldTransform();
 		
-        skeleton.updateWorldTransform();
-
-        lastTime = haxe.Timer.stamp();
-
-        renderer = new SkeletonRenderer(skeleton);
-        debugRenderer = new SkeletonRendererDebug(skeleton);
-		renderer.visible = debugRenderer.visible = false;
- 
+		renderer = new SkeletonRenderer(skeleton);
+		renderer.visible = false;
+		#if !FLX_NO_DEBUG
+		debugRenderer = new SkeletonRendererDebug(skeleton);
+		debugRenderer.visible = false;
+		#end
+		
 		if ( Width == 0 )
-		{
 			Width = FlxG.width;
-		}
 		if ( Height == 0 )
-		{
 			Height = FlxG.height;
-		}
+		
 		makeGraphic( Width, Height );
-		 
-		transformMatrix = new Matrix();
-		antialiasing = true;
- 
-			
-		maskScale  = new FlxPoint( 1, 1 );
-		maskOffset  = new FlxPoint( 0, 0 );
-		lastOffset  = new FlxPoint( offset.x, offset.y );
-	 
-	
+		
+		antialiasing = FlxG.antialiasByDefault;
+		
+		maskScale = new FlxPoint( 1, 1 );
+		maskOffset = new FlxPoint( 0, 0 );
+		lastOffset = new FlxPoint( offset.x, offset.y );
 	}
 	
-	public static function readSkeletonData( dataName:String, dataPath:String, scale:Float = 1  ):SkeletonData
+	/**
+	 * Get Spine animation data.
+	 * @param	DataName	TODO
+	 * @param	DataPath	TODO
+	 * @param	Scale		TODO
+	 */
+	public static function readSkeletonData( DataName:String, DataPath:String, Scale:Float = 1  ):SkeletonData
 	{
-		var spineAtlas:TextureAtlas = TextureAtlas.create(Assets.getText( dataPath + dataName + ".atlas" ), dataPath, new BitmapDataTextureLoader());
-        var json:SkeletonJson = SkeletonJson.create(spineAtlas);
-		json.setScale( scale );
-        var skeletonData:SkeletonData = json.readSkeletonData( dataName,  Assets.getText( dataPath + dataName + ".json") );
+		var spineAtlas:TextureAtlas = TextureAtlas.create(Assets.getText( DataPath + DataName + ".atlas" ), DataPath, new BitmapDataTextureLoader());
+		var json:SkeletonJson = SkeletonJson.create( spineAtlas );
+		json.setScale( Scale );
+		var skeletonData:SkeletonData = json.readSkeletonData( DataName,  Assets.getText( DataPath + DataName + ".json") );
 		return skeletonData;
 	}
 	
- 
-	override public function update():Void
-	{
-		cycleDrawingMode();
-		super.update();
-	}
- 
+	/**
+	 * Called by game loop, updates then blits or renders current frame of animation to the screen
+	 */
 	override public function draw():Void
 	{
 		render();
 		updateMask();
 		super.draw();
+		
+		// update offset to last offset (necessary for masking)
 		offset.x = lastOffset.x;
 		offset.y = lastOffset.y;
 	}
 	
-	
-	private var drawingMode:Int = 0;
-	private var DRAW_WITH_DEBUG:Int = 0;
-	private var DRAW_WITHOUT_DEBUG:Int = 1;
-	private var DRAW_DEBUG_ONLY:Int = 2;
-	
-	public function setDrawingMode( drawWithDebugOrDrawWithoutDebugOrDrawDebugOnly:Int ):Void
+	/**
+	 * Called in draw call, draws spine animation into framePixels.
+	 */
+	private function render():Void 
 	{
-		drawingMode = drawWithDebugOrDrawWithoutDebugOrDrawDebugOnly;
-	}
-	
-	private var cycleDrawingModeKey:String = "SPACE";
-	private function cycleDrawingMode():Void
-	{
-		if ( FlxG.keys.justPressed(cycleDrawingModeKey) )
+		state.update(FlxG.elapsed * FlxG.timeScale);
+		state.apply(skeleton);
+		skeleton.updateWorldTransform();
+		
+		// set fill color
+		var fillColor = FlxColor.TRANSPARENT;
+		
+		// calculate debug fill color
+		#if !FLX_NO_DEBUG
+		if ( FlxG.keys.justPressed(cycleDrawModeKey) )
+			debugDrawMode = (debugDrawMode + 1) % 4;
+		fillColor = (debugDrawMode == 0 || debugDrawMode == 1) ? FlxColor.TRANSPARENT : FlxColor.NAVY_BLUE;
+		#end
+		
+		// clear the bitmap data
+		#if flash
+		framePixels.fillRect( framePixels.rect, fillColor);
+		#else
+		_pixels.fillRect( _pixels.rect, fillColor );
+		#end
+		
+		// draw sprite
+		renderer.draw();
+		drawToFlxSprite( renderer );
+		
+		// draw debug sprite
+		#if !FLX_NO_DEBUG
+		if (debugDrawMode == 1 || debugDrawMode == 2)
 		{
-			drawingMode++;
-			if ( drawingMode > 2 ) drawingMode = 0;
-			setDrawingMode( drawingMode );
+			debugRenderer.draw();
+			drawToFlxSprite( debugRenderer );
 		}
-	}
-	
-	
-	//extend this to add animation logic
-	private function handleAnimations():Void
-	{
+		#end
 		
-	}
-	
-	public var timeScale:Float = 1;
-	private var lastTime:Float = 0.0;
-	private var delta:Float = 0;
-	public function render():Void 
-	{
-		
-        delta = (haxe.Timer.stamp() - lastTime) * timeScale;
-        lastTime = haxe.Timer.stamp();
-        state.update(delta);
-        state.apply(skeleton);
-		
-        handleAnimations();
-
-        skeleton.updateWorldTransform();
-
-		//clear the bitmap data
-		framePixels.fillRect( framePixels.rect, 0);
-		
-        if (drawingMode == 0 || drawingMode == 1)
-		{
-            renderer.draw();
-			drawOnFlxSprite( renderer );
-        } 
-        if (drawingMode == 0 || drawingMode == 2)
-		{
-            debugRenderer.draw();
-			drawOnFlxSprite( debugRenderer );
-        } 
-	
-		//overlap & collission mask
+		// overlap & collission mask
 		updateMask();
- 
-    }
+	}
 	
+	// adjusting position of sprite depending on transformations
+	private function drawToFlxSprite( renderer:Sprite ):Void
+	{
+		// TODO: position spine sprite in center of framePixels container
+		// TODO2: getting width / height of Sprite renderer is slow, find a way position sprite without accessing width / height
+		var translateX:Float = (renderer.width / 2);
+		var translateY:Float = renderer.height;
+		
+		_matrix.identity();
+		_matrix.translate( translateX, translateY );
+		
+		#if flash
+		framePixels.draw( renderer, _matrix );
+		#else
+		// TODO: Why isn't this rendering the animated sprite on native targets?
+		_pixels.draw( renderer, _matrix );
+		resetFrameBitmapDatas();
+		updateAtlasInfo(true);
+		#end
+	}
 	
-	//to make overlap and collision work
+	// to make overlap and collision work
 	private var overlapMask:FlxSprite;
-	private var maskScale:FlxPoint ;
-	private var maskOffset:FlxPoint ;
-	private var lastOffset:FlxPoint ;
+	private var maskScale:FlxPoint;
+	private var maskOffset:FlxPoint;
+	private var lastOffset:FlxPoint;
 	public function setMask( scaleX:Float = 1, scaleY:Float = 1, offsetX:Float = 0, offsetY:Float = 0 ):Void
 	{
-		maskScale = new FlxPoint( scaleX, scaleY );
-		maskOffset = new FlxPoint( offsetX, offsetY );
+		maskScale.make( scaleX, scaleY );
+		maskOffset.make( offsetX, offsetY );
 	}
-	
 	private function updateMask():Void
 	{
 		width = maskScale.x * renderer.width;
@@ -189,20 +192,4 @@ class FlxSpineSprite extends FlxSprite
 		offset.x += maskOffset.x;
 		offset.y += maskOffset.y;
 	}
-	
-	//adjusting position of sprite depending on transformations
-	private var transformMatrix:Matrix;
-	private function drawOnFlxSprite( renderer:Sprite ):Void
-	{
-		var translateX:Float =   (  width / 2  - renderer.width / 2 ) / 2   ;
-		var translateY:Float =  ( height / 2 - renderer.height / 2 ) / 2;
- 
-		transformMatrix.identity();
-		transformMatrix.translate( translateX, translateY );
-		
-		framePixels.draw( renderer, transformMatrix );
-	}
-	
-	
-	
 }

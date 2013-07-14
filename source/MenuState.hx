@@ -18,21 +18,16 @@ import spinehx.Animation;
 import spinehx.Bone;
 import spinehx.BoneData;
 import testclasses.SpineBoyTest;
- 
- 
- 
 
 /**
  * A FlxState which can be used for the game's menu.
  */
 class MenuState extends FlxState
 {
+	var spineSprite:FlxSpineSprite;
 	/**
 	 * Function that is called up when to state is created to set it up.
 	 */
-	
-	 private var spineSprite:FlxSpineSprite;
-	 
 	override public function create():Void
 	{
 		// Set a background color
@@ -41,71 +36,70 @@ class MenuState extends FlxState
 		#if !FLX_NO_MOUSE
 		FlxG.mouse.show();
 		#end
-
-		super.create();
-	 
- 
-			 
-		spineSprite = new SpineBoyTest( FlxSpineSprite.readSkeletonData( "spineboy", "assets/" ), 0, 0, 600, 600 );
-		add( spineSprite );
-		  
-	  
-	 
 		
-	} 
-
-  
-	  
+		super.create();
+		
+		spineSprite = cast new SpineBoyTest( FlxSpineSprite.readSkeletonData( "spineboy", "assets/" ), 120, 40, 400, 400 );
+		add( spineSprite );
+		
+		FlxG.timeScale = 0.66;
+		
+		var instructions = new FlxText(0, 0, 250, "Change Display: Space Bar\nMove: Arrows\nRotate: A/D\nScale: F/G\nMove Origin: F/G", 12);
+		add(instructions);
+	}
+	
 	override public function update():Void
 	{
-	
- 
+		// movement
+		if ( FlxG.keys.pressed("UP") )
+		{
+			spineSprite.y -= 500 * FlxG.elapsed;
+		}
+		else if ( FlxG.keys.pressed("DOWN") )
+		{
+			spineSprite.y += 500 * FlxG.elapsed;
+		}
 		if ( FlxG.keys.pressed("RIGHT") )
 		{
-			 
 			spineSprite.x += 500 * FlxG.elapsed;
- 
 		}
 		else if ( FlxG.keys.pressed("LEFT") )
 		{
-		 
 			spineSprite.x -= 500 * FlxG.elapsed;
 		}
-		 
 		
-	 	if ( FlxG.keys.justPressed( "A") )
-		{
-			 spineSprite.angle += 20; 
-		} 
-		if ( FlxG.keys.justPressed( "D") )
-		{
-			 spineSprite.angle -= 20; 
-		}
-		
-		if ( FlxG.keys.justPressed( "R") )
-		{
-			 spineSprite.scale.x += 0.2;
-		} 
-		if ( FlxG.keys.justPressed( "T") )
-		{
-			 spineSprite.scale.x -= 0.2; 
-		}
-		
+		// origin movement
 		if ( FlxG.keys.justPressed("F") )
 		{
-			spineSprite.origin.x = 0;
+			spineSprite.origin.x += 500 * FlxG.elapsed;
 		}
 		if ( FlxG.keys.justPressed("G") )
 		{
-			spineSprite.origin.x = spineSprite.width / 2;
+			spineSprite.origin.x -= 500 * FlxG.elapsed;
 		}
- 
 		
+		// rotation
+	 	if ( FlxG.keys.justPressed("A") )
+		{
+			spineSprite.angle += 20;
+		}
+		if ( FlxG.keys.justPressed("D") )
+		{
+			 spineSprite.angle -= 20;
+		}
 		
-		
+		// scale
+		if ( FlxG.keys.justPressed("R") )
+		{
+			 spineSprite.scale.x += 0.2;
+			 spineSprite.scale.y += 0.2;
+		} 
+		if ( FlxG.keys.justPressed("T") )
+		{
+			 spineSprite.scale.x -= 0.2; 
+			 spineSprite.scale.y -= 0.2; 
+		}
 		
 		super.update();
-		
-	 
 	}
 }
