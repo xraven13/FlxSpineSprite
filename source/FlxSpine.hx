@@ -41,8 +41,9 @@ class FlxSpine extends FlxSprite
 	public var renderer:SkeletonRenderer;
 	public var collider:FlxObject;
 	
-	public var sprites:ObjectMap<RegionAttachment, FlxSprite>;
-	public var spriteAngles:ObjectMap<RegionAttachment, Float>;
+	public var wrapperAngles:ObjectMap<RegionAttachment, Float>;
+	public var cachedSprites:ObjectMap<RegionAttachment, FlxSprite>;
+	private var numCachedSprites:Int;
 	
 	/**
 	 * Instantiate a new Spine Sprite.
@@ -75,8 +76,10 @@ class FlxSpine extends FlxSprite
 		renderer = new SkeletonRenderer(skeleton);
 		renderer.visible = false;
 		
-		sprites = new ObjectMap<RegionAttachment, FlxSprite>();
-		spriteAngles = new ObjectMap<RegionAttachment, Float>();
+		cachedSprites = new ObjectMap<RegionAttachment, FlxSprite>();
+		wrapperAngles = new ObjectMap<RegionAttachment, Float>();
+		
+		FlxG.watch.add(this, "numCachedSprites", "CachedSprites");
 	}
 	
 	/**
@@ -125,7 +128,7 @@ class FlxSpine extends FlxSprite
 				regionAttachment.updateVertices(slot);
 				var vertices = regionAttachment.getVertices();
 				var wrapper:FlxSprite = get(regionAttachment);
-				var wrapperAngle:Float = spriteAngles.get(regionAttachment);
+				var wrapperAngle:Float = wrapperAngles.get(regionAttachment);
 				var region:AtlasRegion = cast regionAttachment.getRegion();
 				var bone:Bone = slot.getBone();
 				var x:Float = regionAttachment.x - region.offsetX;
@@ -179,46 +182,41 @@ class FlxSpine extends FlxSprite
 	
 	public function get(regionAttachment:RegionAttachment):FlxSprite 
 	{
-		var wrapper:FlxSprite = new FlxSprite();
+		if (cachedSprites.exists(regionAttachment))
+			return cachedSprites.get(regionAttachment);
 		
-		if (sprites.exists(regionAttachment))
+		var region:AtlasRegion = cast regionAttachment.getRegion();
+		var texture:BitmapDataTexture = cast region.getTexture();
+		
+		var cachedGraphic:CachedGraphicsObject = FlxG.bitmap.add(texture.bd);
+		var atlasRegion:SpriteSheetRegion = new SpriteSheetRegion(cachedGraphic, region.getRegionX(), region.getRegionY());
+		
+		if (region.rotate) 
 		{
-			return sprites.get(regionAttachment);
+			atlasRegion.region.tileWidth = atlasRegion.region.width = region.getRegionHeight();
+			atlasRegion.region.tileHeight = atlasRegion.region.height = region.getRegionWidth();
 		}
-		else
+		else 
 		{
-			var region:AtlasRegion = cast regionAttachment.getRegion();
-			var texture:BitmapDataTexture = cast region.getTexture();
-			
-			var cachedGraphic:CachedGraphicsObject = FlxG.bitmap.add(texture.bd);
-			var atlasRegion:SpriteSheetRegion = new SpriteSheetRegion(cachedGraphic, region.getRegionX(), region.getRegionY());
-			
-			if (region.rotate) 
-			{
-				atlasRegion.region.tileWidth = atlasRegion.region.width = region.getRegionHeight();
-				atlasRegion.region.tileHeight = atlasRegion.region.height = region.getRegionWidth();
-			}
-			else 
-			{
-				atlasRegion.region.tileWidth = atlasRegion.region.width = region.getRegionWidth();
-				atlasRegion.region.tileHeight = atlasRegion.region.height = region.getRegionHeight();
-			}
-			
-			wrapper.setPosition(0, 0);
-			wrapper.loadGraphic(atlasRegion);
-			wrapper.antialiasing = antialiasing;
-			wrapper.setOriginToCorner();
-			wrapper.origin.x = regionAttachment.width / 2; // Registration point.
-			wrapper.origin.y = regionAttachment.height / 2;
-			if (region.rotate) 
-			{
-				wrapper.angle = 90;
-				wrapper.origin.x -= region.getRegionWidth();
-			}
-			
-			spriteAngles.set(regionAttachment, wrapper.angle);
-			sprites.set(regionAttachment, wrapper);
+			atlasRegion.region.tileWidth = atlasRegion.region.width = region.getRegionWidth();
+			atlasRegion.region.tileHeight = atlasRegion.region.height = region.getRegionHeight();
 		}
+		
+		var wrapper:FlxSprite = new FlxSprite(0, 0, atlasRegion);
+		wrapper.antialiasing = antialiasing;
+		wrapper.origin.x = regionAttachment.width / 2; // Registration point.
+		wrapper.origin.y = regionAttachment.height / 2;
+		if (region.rotate) 
+		{
+			wrapper.angle = 90;
+			wrapper.origin.x -= region.getRegionWidth();
+		}
+		
+		cachedSprites.set(regionAttachment, wrapper);
+		wrapperAngles.set(regionAttachment, wrapper.angle);
+		
+		numCachedSprites++;
+		
 		return wrapper;
 	}
 }
