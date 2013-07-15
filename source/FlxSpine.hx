@@ -9,9 +9,11 @@ import flixel.FlxG;
 import flixel.FlxCamera;
 import flixel.FlxSprite;
 import flixel.system.input.FlxMapObject;
+import flixel.system.frontEnds.BitmapFrontEnd;
 import flixel.util.FlxPoint;
 import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil;
+import flixel.util.loaders.SpriteSheetRegion;
 import flixel.FlxObject;
 import haxe.ds.ObjectMap;
 import openfl.Assets;
@@ -59,8 +61,11 @@ class FlxSpine extends FlxSprite
 	{
 		super(X, Y);
 		
-		width = (Width == 0) ? FlxG.width : Width;
-		height = (Height == 0) ? FlxG.height : Height;
+		/*width = (Width == 0) ? FlxG.width : Width;
+		height = (Height == 0) ? FlxG.height : Height;*/
+		
+		width = 0;
+		height = 0;
 		
 		this.skeletonData = skeletonData;
 		
@@ -126,7 +131,7 @@ class FlxSpine extends FlxSprite
 	{
 		var drawOrder:Array<Slot> = skeleton.drawOrder;
 		var flipX:Int = (skeleton.flipX) ? -1 : 1;
-		_aabb.set(x, y, 0, 0);
+		_aabb.set(0, 0, 0, 0);
 		for (slot in drawOrder) 
 		{
 			var attachment:Attachment = slot.attachment;
@@ -142,18 +147,21 @@ class FlxSpine extends FlxSprite
                 var x:Float = regionAttachment.x - region.offsetX;
                 var y:Float = regionAttachment.y - region.offsetY;
 				
-				wrapper.x = bone.worldX + x * bone.m00 + y * bone.m01 + this.x - wrapper.frameWidth * 0.5;
-				wrapper.y = bone.worldY + x * bone.m10 + y * bone.m11 + this.y - wrapper.frameHeight * 0.5;
+				wrapper.x = bone.worldX + x * bone.m00 + y * bone.m01 + wrapper.frameWidth * 0.5;
+				wrapper.y = bone.worldY + x * bone.m10 + y * bone.m11 + wrapper.frameHeight * 0.5;
 				
                 wrapper.angle = (-(bone.worldRotation + regionAttachment.rotation) + wrapperAngle) * flipX;
                 wrapper.scale.x = (bone.worldScaleX + regionAttachment.scaleX - 1) * flipX;
                 wrapper.scale.y = (bone.worldScaleY + regionAttachment.scaleY - 1);
 				wrapper.antialiasing = FlxG.antialiasByDefault;
                 
+				wrapper.calcAABB();
 				_aabb.union(wrapper.aabb);
             }
 		}
 		
+		_aabb.x = x;
+		_aabb.y = y;
 		width = _aabb.width;
 		height = _aabb.height;
 	}
@@ -224,25 +232,23 @@ class FlxSpine extends FlxSprite
 		{
             var region:AtlasRegion = cast regionAttachment.getRegion();
             var texture:BitmapDataTexture = cast(region.getTexture(), BitmapDataTexture);
-
             var bitmapData:BitmapData = texture.bd;
-            var regionData:BitmapData;
+			
+			var cached:CachedGraphicsObject = FlxG.bitmap.add(bitmapData);
+			var atlasRegion:SpriteSheetRegion = new SpriteSheetRegion(cached, region.getRegionX(), region.getRegionY());
+			
             if (region.rotate) 
 			{
-                regionData = new BitmapData(region.getRegionHeight(), region.getRegionWidth());
-                regionData.copyPixels(bitmapData, //
-                new Rectangle(region.getRegionX(), region.getRegionY(), region.getRegionHeight(), region.getRegionWidth()), //
-                new Point());
+                atlasRegion.region.tileWidth = atlasRegion.region.width = region.getRegionHeight();
+				atlasRegion.region.tileHeight = atlasRegion.region.height = region.getRegionWidth();
             } 
 			else 
 			{
-                regionData = new BitmapData(region.getRegionWidth(), region.getRegionHeight());
-                regionData.copyPixels(bitmapData, //
-                new Rectangle(region.getRegionX(), region.getRegionY(), region.getRegionWidth(), region.getRegionHeight()), //
-                new Point());
+                atlasRegion.region.tileWidth = atlasRegion.region.width = region.getRegionWidth();
+				atlasRegion.region.tileHeight = atlasRegion.region.height = region.getRegionHeight();
             }
-
-            wrapper = new FlxSprite(0, 0, regionData);
+			
+            wrapper = new FlxSprite(0, 0, atlasRegion);
             wrapper.antialiasing = FlxG.antialiasByDefault;
 			wrapper.setOriginToCorner();
             wrapper.origin.x = regionAttachment.width / 2; // Registration point.
