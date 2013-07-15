@@ -21,10 +21,8 @@ import spinehx.AnimationStateData;
 import spinehx.atlas.TextureAtlas;
 import spinehx.attachments.Attachment;
 import spinehx.attachments.RegionAttachment;
-import spinehx.platform.nme.BitmapDataTexture;
-import spinehx.platform.nme.BitmapDataTextureLoader;
-import spinehx.platform.nme.renderers.SkeletonRenderer;
-import spinehx.platform.nme.renderers.SkeletonRendererDebug;
+import spinehx.platform.nme.flixel.FlixelTexture;
+import spinehx.platform.nme.flixel.FlixelTextureLoader;
 
 /**
  * A Sprite that can play animations exported by Spine (http://esotericsoftware.com/)
@@ -39,7 +37,6 @@ class FlxSpine extends FlxSprite
 	public var state:AnimationState;
 	public var stateData:AnimationStateData;
 	
-	public var renderer:SkeletonRenderer;
 	public var collider:FlxObject;
 	
 	public var wrapperAngles:ObjectMap<RegionAttachment, Float>;
@@ -73,11 +70,35 @@ class FlxSpine extends FlxSprite
 		skeleton.setFlipY(true);
 		//skeleton.setFlipX(true);
 		
-		renderer = new SkeletonRenderer(skeleton);
-		renderer.visible = false;
-		
 		cachedSprites = new ObjectMap<RegionAttachment, FlxSprite>();
 		wrapperAngles = new ObjectMap<RegionAttachment, Float>();
+	}
+	
+	override public function destroy():Void
+	{
+		if (collider != null)
+			collider.destroy();
+		collider = null;
+		
+		skeletonData = null;
+		skeleton = null;
+		state = null;
+		stateData = null;
+		wrapperAngles = null;
+		
+		if (cachedSprites != null)
+		{
+			for (key in cachedSprites.keys())
+			{
+				var sprite:FlxSprite = cachedSprites.get(key);
+				cachedSprites.remove(key);
+				if (sprite != null)	
+					sprite.destroy();
+			}
+		}
+		cachedSprites = null;
+		
+		super.destroy();
 	}
 	
 	public var flipX(get, set):Bool;
@@ -120,7 +141,7 @@ class FlxSpine extends FlxSprite
 	public static function readSkeletonData(DataName:String, DataPath:String, Scale:Float = 1):SkeletonData
 	{
 		if (DataPath.lastIndexOf("/") < 0) DataPath += "/"; // append / at the end of the folder path
-		var spineAtlas:TextureAtlas = TextureAtlas.create(Assets.getText(DataPath + DataName + ".atlas"), DataPath, new BitmapDataTextureLoader());
+		var spineAtlas:TextureAtlas = TextureAtlas.create(Assets.getText(DataPath + DataName + ".atlas"), DataPath, new FlixelTextureLoader());
 		var json:SkeletonJson = SkeletonJson.create(spineAtlas);
 		json.setScale(Scale);
 		var skeletonData:SkeletonData = json.readSkeletonData(DataName, Assets.getText(DataPath + DataName + ".json"));
@@ -228,7 +249,7 @@ class FlxSpine extends FlxSprite
 			return cachedSprites.get(regionAttachment);
 		
 		var region:AtlasRegion = cast regionAttachment.getRegion();
-		var texture:BitmapDataTexture = cast region.getTexture();
+		var texture:FlixelTexture = cast region.getTexture();
 		
 		var cachedGraphic:CachedGraphicsObject = FlxG.bitmap.add(texture.bd);
 		var atlasRegion:SpriteSheetRegion = new SpriteSheetRegion(cachedGraphic, region.getRegionX(), region.getRegionY());
