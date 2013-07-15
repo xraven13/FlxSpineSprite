@@ -19,9 +19,7 @@ import spinehx.Bone;
 import spinehx.BoneData;
 import testclasses.GoblinTest;
 import testclasses.SpineBoyTest;
- 
- 
- 
+
 
 /**
  * A FlxState which can be used for the game's menu.
@@ -43,17 +41,23 @@ class MenuState extends FlxState
 		
 		super.create();
 		
-		spineSprite = cast new SpineBoyTest(FlxSpine.readSkeletonData("spineboy", "assets/"), 120, 40);
+		spineSprite = cast new SpineBoyTest(FlxSpine.readSkeletonData("spineboy", "assets"), 300, 370);
 		add(spineSprite);
 		
 		FlxG.timeScale = 0.66;
 		
-		var instructions = new FlxText(0, 0, 250, "Space: Change Display Type\nMove: Arrows\nRotate: A/D\nScale: F/G\nMove Origin: F/G", 12);
+		var instructions = new FlxText(0, 0, 250, "Space: Toggle Debug Display\nMove: Arrows", 12);
 		add(instructions);
 	}
 	
 	override public function update():Void
 	{
+		// toggle debug display
+		#if !FLX_NO_DEBUG
+		if ( FlxG.keys.justPressed("SPACE") )
+			FlxG.debugger.visualDebug = !FlxG.debugger.visualDebug;
+		#end
+		
 		// movement
 		if ( FlxG.keys.pressed("UP") )
 		{
@@ -72,8 +76,10 @@ class MenuState extends FlxState
 			spineSprite.x -= 500 * FlxG.elapsed;
 		}
 		
+		// NOT YET SUPPORTED
+		/*
 		// origin movement
-		/*if ( FlxG.keys.justPressed("F") )
+		if ( FlxG.keys.justPressed("F") )
 		{
 			spineSprite.origin.x += 500 * FlxG.elapsed;
 		}
@@ -102,7 +108,8 @@ class MenuState extends FlxState
 		{
 			 spineSprite.scale.x -= 0.2; 
 			 spineSprite.scale.y -= 0.2; 
-		}*/
+		}
+		*/
 		
 		super.update();
 	}

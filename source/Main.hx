@@ -42,6 +42,11 @@ class Main extends Sprite
 		#if (cpp || neko)
 		Lib.current.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUP);
 		#end
+		
+		// Profile code - disable <haxedef name="profile_cpp" if="target_cpp" /> before ship
+		#if (profile_cpp && !neko)
+		cpp.vm.Profiler.start("perf.txt");
+		#end
 	}
 	
 	#if (cpp || neko)
@@ -49,6 +54,11 @@ class Main extends Sprite
 	{
 		if (e.keyCode == Keyboard.ESCAPE) 
 		{
+			// Profiling code - disable <haxedef name="profile_cpp" if="target_cpp" /> before ship
+			#if (profile_cpp && !neko)
+			cpp.vm.Profiler.stop();
+			#end
+			
 			Lib.exit();
 		}
 	}
