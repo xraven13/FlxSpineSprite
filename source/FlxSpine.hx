@@ -43,7 +43,6 @@ class FlxSpine extends FlxSprite
 	
 	public var wrapperAngles:ObjectMap<RegionAttachment, Float>;
 	public var cachedSprites:ObjectMap<RegionAttachment, FlxSprite>;
-	private var numCachedSprites:Int;
 	
 	/**
 	 * Instantiate a new Spine Sprite.
@@ -78,8 +77,6 @@ class FlxSpine extends FlxSprite
 		
 		cachedSprites = new ObjectMap<RegionAttachment, FlxSprite>();
 		wrapperAngles = new ObjectMap<RegionAttachment, Float>();
-		
-		FlxG.watch.add(this, "numCachedSprites", "CachedSprites");
 	}
 	
 	/**
@@ -214,9 +211,6 @@ class FlxSpine extends FlxSprite
 		
 		cachedSprites.set(regionAttachment, wrapper);
 		wrapperAngles.set(regionAttachment, wrapper.angle);
-		
-		numCachedSprites++;
-		
 		return wrapper;
 	}
 }
