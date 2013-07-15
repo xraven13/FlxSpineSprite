@@ -188,8 +188,8 @@ class FlxSpine extends FlxSprite
 				var x:Float = regionAttachment.x - region.offsetX;
 				var y:Float = regionAttachment.y - region.offsetY;
 				
-				var relativeX:Float = bone.worldX + x * bone.m00 + y * bone.m01;
-				var relativeY:Float = bone.worldY + x * bone.m10 + y * bone.m11;
+				var relativeX:Float = bone.worldX + x * bone.m00 + y * bone.m01 - origin.x;
+				var relativeY:Float = bone.worldY + x * bone.m10 + y * bone.m11 - origin.y;
 				
 				var dx:Float = relativeX - offset.x;
 				var dy:Float = relativeY - offset.y;
