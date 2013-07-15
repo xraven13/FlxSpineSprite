@@ -7,6 +7,7 @@ import flixel.FlxG;
 import flixel.FlxCamera;
 import flixel.FlxSprite;
 import flixel.FlxObject;
+import flixel.util.FlxAngle;
 import flixel.util.loaders.SpriteSheetRegion;
 import flixel.system.frontEnds.BitmapFrontEnd.CachedGraphicsObject;
 
@@ -67,8 +68,8 @@ class FlxSpine extends FlxSprite
 		state = new AnimationState(stateData);
 		
 		skeleton = Skeleton.create(skeletonData);
-		skeleton.setX(X);
-		skeleton.setY(Y);
+		skeleton.setX(0);
+		skeleton.setY(0);
 		skeleton.setFlipY(true);
 		//skeleton.setFlipX(true);
 		
@@ -77,6 +78,37 @@ class FlxSpine extends FlxSprite
 		
 		cachedSprites = new ObjectMap<RegionAttachment, FlxSprite>();
 		wrapperAngles = new ObjectMap<RegionAttachment, Float>();
+	}
+	
+	public var flipX(get, set):Bool;
+	
+	private function get_flipX():Bool
+	{
+		return skeleton.flipX;
+	}
+	
+	private function set_flipX(value:Bool):Bool
+	{
+		if (value != skeleton.flipX)
+			skeleton.setFlipX(value);
+			
+		facing = (value == true) ? FlxObject.LEFT : FlxObject.RIGHT;
+		return value;
+	}
+	
+	public var flipY(get, set):Bool;
+	
+	private function get_flipY():Bool
+	{
+		return skeleton.flipY;
+	}
+	
+	private function set_flipY(value:Bool):Bool
+	{
+		if (value != skeleton.flipY)
+			skeleton.setFlipY(value);
+			
+		return value;
 	}
 	
 	/**
@@ -114,7 +146,11 @@ class FlxSpine extends FlxSprite
 		var flipY:Int = (skeleton.flipY) ? 1 : -1;
 		var flip:Int = flipX * flipY;
 		
-		_aabb.set(0,0,0,0);
+		_aabb.set(0, 0, 0, 0);
+		
+		var radians:Float = angle * FlxAngle.TO_RAD;
+		var cos:Float = Math.cos(radians);
+		var sin:Float = Math.sin(radians);
 		
 		for (slot in drawOrder) 
 		{
@@ -131,12 +167,21 @@ class FlxSpine extends FlxSprite
 				var x:Float = regionAttachment.x - region.offsetX;
 				var y:Float = regionAttachment.y - region.offsetY;
 				
-				wrapper.x = bone.worldX + x * bone.m00 + y * bone.m01 + this.x - wrapper.frameWidth * 0.5;
-				wrapper.y = bone.worldY + x * bone.m10 + y * bone.m11 + this.y - wrapper.frameHeight * 0.5;
+				var relativeX:Float = bone.worldX + x * bone.m00 + y * bone.m01;
+				var relativeY:Float = bone.worldY + x * bone.m10 + y * bone.m11;
 				
-				wrapper.angle = (-(bone.worldRotation + regionAttachment.rotation) + wrapperAngle) * flip;
-				wrapper.scale.x = (bone.worldScaleX + regionAttachment.scaleX - 1) * flipX;
-				wrapper.scale.y = (bone.worldScaleY + regionAttachment.scaleY - 1) * flipY;
+				var dx:Float = relativeX - offset.x;
+				var dy:Float = relativeY - offset.y;
+				
+				var relX:Float = (dx * cos * scale.x - dy * sin * scale.y);
+				var relY:Float = (dx * sin * scale.x + dy * cos * scale.y);
+				
+				wrapper.x = this.x + relX - wrapper.frameWidth * 0.5;
+				wrapper.y = this.y + relY - wrapper.frameHeight * 0.5;
+				
+				wrapper.angle = (-(bone.worldRotation + regionAttachment.rotation) + wrapperAngle) * flip + angle;
+				wrapper.scale.x = (bone.worldScaleX + regionAttachment.scaleX - 1) * flipX * scale.x;
+				wrapper.scale.y = (bone.worldScaleY + regionAttachment.scaleY - 1) * flipY * scale.y;
 				wrapper.antialiasing = antialiasing;
 				wrapper.visible = true;
 				wrapper.draw();

@@ -41,7 +41,9 @@ class MenuState extends FlxState
 		
 		super.create();
 		
-		spineSprite = cast new SpineBoyTest(FlxSpine.readSkeletonData("spineboy", "assets"), 300, 370);
+		spineSprite = cast new SpineBoyTest(FlxSpine.readSkeletonData("spineboy", "assets"), FlxG.width * 0.5, FlxG.height * 0.5);
+		spineSprite.angularVelocity = 50;
+		spineSprite.scale.set(0.5, 0.5);
 		add(spineSprite);
 		
 		FlxG.timeScale = 0.66;
@@ -59,21 +61,23 @@ class MenuState extends FlxState
 		#end
 		
 		// movement
-		if ( FlxG.keys.pressed("UP") )
+		/*if ( FlxG.keys.pressed("UP") )
 		{
 			spineSprite.y -= 500 * FlxG.elapsed;
 		}
 		else if ( FlxG.keys.pressed("DOWN") )
 		{
 			spineSprite.y += 500 * FlxG.elapsed;
-		}
+		}*/
 		if ( FlxG.keys.pressed("RIGHT") )
 		{
-			spineSprite.x += 500 * FlxG.elapsed;
+			spineSprite.flipX = false;
+			spineSprite.angularVelocity = 50;
 		}
 		else if ( FlxG.keys.pressed("LEFT") )
 		{
-			spineSprite.x -= 500 * FlxG.elapsed;
+			spineSprite.flipX = true;
+			spineSprite.angularVelocity = -50;
 		}
 		
 		// NOT YET SUPPORTED
