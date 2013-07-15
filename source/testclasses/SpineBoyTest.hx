@@ -9,9 +9,9 @@ import spinehx.SkeletonData;
 class SpineBoyTest extends FlxSpine
 {
 
-	public function new(skeletonData:SkeletonData,  X:Float = 0, Y:Float = 0, Width:Int = 0, Height:Int = 0 ) 
+	public function new(skeletonData:SkeletonData,  X:Float = 0, Y:Float = 0) 
 	{
-		super(skeletonData, X, Y, Width, Height);
+		super(skeletonData, X, Y);
 		
 		stateData.setMixByName("walk", "jump", 0.2);
 		stateData.setMixByName("jump", "walk", 0.4);

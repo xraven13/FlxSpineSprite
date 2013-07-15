@@ -43,7 +43,7 @@ class MenuState extends FlxState
 		
 		super.create();
 		
-		spineSprite = cast new SpineBoyTest(FlxSpine.readSkeletonData("spineboy", "assets/"), 120, 40, 400, 400);
+		spineSprite = cast new SpineBoyTest(FlxSpine.readSkeletonData("spineboy", "assets/"), 120, 40);
 		add(spineSprite);
 		
 		FlxG.timeScale = 0.66;
