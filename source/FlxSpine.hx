@@ -173,6 +173,9 @@ class FlxSpine extends FlxSprite
 		var cos:Float = Math.cos(radians);
 		var sin:Float = Math.sin(radians);
 		
+		var oox:Float = origin.x + offset.x;
+		var ooy:Float = origin.y + offset.y;
+		
 		for (slot in drawOrder) 
 		{
 			var attachment:Attachment = slot.attachment;
@@ -188,11 +191,8 @@ class FlxSpine extends FlxSprite
 				var x:Float = regionAttachment.x - region.offsetX;
 				var y:Float = regionAttachment.y - region.offsetY;
 				
-				var relativeX:Float = bone.worldX + x * bone.m00 + y * bone.m01 - origin.x;
-				var relativeY:Float = bone.worldY + x * bone.m10 + y * bone.m11 - origin.y;
-				
-				var dx:Float = relativeX - offset.x;
-				var dy:Float = relativeY - offset.y;
+				var dx:Float = bone.worldX + x * bone.m00 + y * bone.m01 - oox;
+				var dy:Float = bone.worldY + x * bone.m10 + y * bone.m11 - ooy;
 				
 				var relX:Float = (dx * cos * scale.x - dy * sin * scale.y);
 				var relY:Float = (dx * sin * scale.x + dy * cos * scale.y);
