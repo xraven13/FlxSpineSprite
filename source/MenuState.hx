@@ -70,10 +70,12 @@ class MenuState extends FlxState
 		if ( FlxG.keys.pressed("RIGHT") )
 		{
 			spineSprite.x += 500 * FlxG.elapsed;
+			spineSprite.flipX = false;
 		}
 		else if ( FlxG.keys.pressed("LEFT") )
 		{
 			spineSprite.x -= 500 * FlxG.elapsed;
+			spineSprite.flipX = true;
 		}
 		
 		// NOT YET SUPPORTED

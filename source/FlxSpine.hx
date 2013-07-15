@@ -67,8 +67,8 @@ class FlxSpine extends FlxSprite
 		state = new AnimationState(stateData);
 		
 		skeleton = Skeleton.create(skeletonData);
-		skeleton.setX(X);
-		skeleton.setY(Y);
+		skeleton.setX(0);
+		skeleton.setY(0);
 		skeleton.setFlipY(true);
 		//skeleton.setFlipX(true);
 		
@@ -77,6 +77,37 @@ class FlxSpine extends FlxSprite
 		
 		cachedSprites = new ObjectMap<RegionAttachment, FlxSprite>();
 		wrapperAngles = new ObjectMap<RegionAttachment, Float>();
+	}
+	
+	public var flipX(get, set):Bool;
+	
+	private function get_flipX():Bool
+	{
+		return skeleton.flipX;
+	}
+	
+	private function set_flipX(value:Bool):Bool
+	{
+		if (value != skeleton.flipX)
+			skeleton.setFlipX(value);
+			
+		facing = (value == true) ? FlxObject.LEFT : FlxObject.RIGHT;
+		return value;
+	}
+	
+	public var flipY(get, set):Bool;
+	
+	private function get_flipY():Bool
+	{
+		return skeleton.flipY;
+	}
+	
+	private function set_flipY(value:Bool):Bool
+	{
+		if (value != skeleton.flipY)
+			skeleton.setFlipY(value);
+			
+		return value;
 	}
 	
 	/**
