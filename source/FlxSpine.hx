@@ -61,9 +61,6 @@ class FlxSpine extends FlxSprite
 	{
 		super(X, Y);
 		
-		/*width = (Width == 0) ? FlxG.width : Width;
-		height = (Height == 0) ? FlxG.height : Height;*/
-		
 		width = 0;
 		height = 0;
 		
@@ -74,7 +71,7 @@ class FlxSpine extends FlxSprite
 		
 		skeleton = Skeleton.create(skeletonData);
 		skeleton.setFlipY(true);
-	//	skeleton.setFlipX(true);
+		//skeleton.setFlipX(true);
 		
 		skeleton.updateWorldTransform();
 		
@@ -90,8 +87,8 @@ class FlxSpine extends FlxSprite
 	
 	public function clearBuffers() 
 	{
-        for (s in sprites)	s.visible = false;
-    }
+		for (s in sprites)	s.visible = false;
+	}
 	
 	/**
 	 * Get Spine animation data.
@@ -124,7 +121,36 @@ class FlxSpine extends FlxSprite
 	 */
 	override public function draw():Void
 	{
-		render();
+		var drawOrder:Array<Slot> = skeleton.drawOrder;
+		var flipX:Int = (skeleton.flipX) ? -1 : 1;
+		var flipY:Int = (skeleton.flipY) ? 1 : -1;
+		var flip:Int = flipX * flipY;
+		for (slot in drawOrder) 
+		{
+			var attachment:Attachment = slot.attachment;
+			if (Std.is(attachment, RegionAttachment)) 
+			{
+				var regionAttachment:RegionAttachment = cast(attachment, RegionAttachment);
+				regionAttachment.updateVertices(slot);
+				var vertices = regionAttachment.getVertices();
+				var wrapper:FlxSprite = get(regionAttachment);
+				var wrapperAngle:Float = spriteAngles.get(regionAttachment);
+				var region:AtlasRegion = cast regionAttachment.getRegion();
+				var bone:Bone = slot.getBone();
+				var x:Float = regionAttachment.x - region.offsetX;
+				var y:Float = regionAttachment.y - region.offsetY;
+				
+				wrapper.x = bone.worldX + x * bone.m00 + y * bone.m01 + this.x - wrapper.frameWidth * 0.5;
+				wrapper.y = bone.worldY + x * bone.m10 + y * bone.m11 + this.y - wrapper.frameHeight * 0.5;
+				
+				wrapper.angle = (-(bone.worldRotation + regionAttachment.rotation) + wrapperAngle) * flip;
+				wrapper.scale.x = (bone.worldScaleX + regionAttachment.scaleX - 1) * flipX;
+				wrapper.scale.y = (bone.worldScaleY + regionAttachment.scaleY - 1) * flipY;
+				wrapper.antialiasing = FlxG.antialiasByDefault;
+				wrapper.visible = true;
+				wrapper.draw();
+			}
+		}
 	}
 	
 	private function calcBounds():Void
@@ -140,67 +166,30 @@ class FlxSpine extends FlxSprite
 				var regionAttachment:RegionAttachment = cast(attachment, RegionAttachment);
 				regionAttachment.updateVertices(slot);
 				var vertices = regionAttachment.getVertices();
-                var wrapper:FlxSprite = get(regionAttachment);
+				var wrapper:FlxSprite = get(regionAttachment);
 				var wrapperAngle:Float = spriteAngles.get(regionAttachment);
-                var region:AtlasRegion = cast regionAttachment.getRegion();
-                var bone:Bone = slot.getBone();
-                var x:Float = regionAttachment.x - region.offsetX;
-                var y:Float = regionAttachment.y - region.offsetY;
+				var region:AtlasRegion = cast regionAttachment.getRegion();
+				var bone:Bone = slot.getBone();
+				var x:Float = regionAttachment.x - region.offsetX;
+				var y:Float = regionAttachment.y - region.offsetY;
 				
 				wrapper.x = bone.worldX + x * bone.m00 + y * bone.m01 + wrapper.frameWidth * 0.5;
 				wrapper.y = bone.worldY + x * bone.m10 + y * bone.m11 + wrapper.frameHeight * 0.5;
 				
-                wrapper.angle = (-(bone.worldRotation + regionAttachment.rotation) + wrapperAngle) * flipX;
-                wrapper.scale.x = (bone.worldScaleX + regionAttachment.scaleX - 1) * flipX;
-                wrapper.scale.y = (bone.worldScaleY + regionAttachment.scaleY - 1);
+				wrapper.angle = (-(bone.worldRotation + regionAttachment.rotation) + wrapperAngle) * flipX;
+				wrapper.scale.x = (bone.worldScaleX + regionAttachment.scaleX - 1) * flipX;
+				wrapper.scale.y = (bone.worldScaleY + regionAttachment.scaleY - 1);
 				wrapper.antialiasing = FlxG.antialiasByDefault;
-                
+				
 				wrapper.calcAABB();
 				_aabb.union(wrapper.aabb);
-            }
+			}
 		}
 		
 		_aabb.x = x;
 		_aabb.y = y;
 		width = _aabb.width;
 		height = _aabb.height;
-	}
-	
-	/**
-	 * Called in draw call, draws spine animation into framePixels.
-	 */
-	private function render():Void 
-	{
-		var drawOrder:Array<Slot> = skeleton.drawOrder;
-		var flipX:Int = (skeleton.flipX) ? -1 : 1;
-		var flipY:Int = (skeleton.flipY) ? 1 : -1;
-		var flip:Int = flipX * flipY;
-		for (slot in drawOrder) 
-		{
-			var attachment:Attachment = slot.attachment;
-			if (Std.is(attachment, RegionAttachment)) 
-			{
-				var regionAttachment:RegionAttachment = cast(attachment, RegionAttachment);
-				regionAttachment.updateVertices(slot);
-				var vertices = regionAttachment.getVertices();
-                var wrapper:FlxSprite = get(regionAttachment);
-				var wrapperAngle:Float = spriteAngles.get(regionAttachment);
-                var region:AtlasRegion = cast regionAttachment.getRegion();
-                var bone:Bone = slot.getBone();
-                var x:Float = regionAttachment.x - region.offsetX;
-                var y:Float = regionAttachment.y - region.offsetY;
-				
-				wrapper.x = bone.worldX + x * bone.m00 + y * bone.m01 + this.x - wrapper.frameWidth * 0.5;
-				wrapper.y = bone.worldY + x * bone.m10 + y * bone.m11 + this.y - wrapper.frameHeight * 0.5;
-				
-                wrapper.angle = (-(bone.worldRotation + regionAttachment.rotation) + wrapperAngle) * flip;
-                wrapper.scale.x = (bone.worldScaleX + regionAttachment.scaleX - 1) * flipX;
-                wrapper.scale.y = (bone.worldScaleY + regionAttachment.scaleY - 1) * flipY;
-				wrapper.antialiasing = FlxG.antialiasByDefault;
-                wrapper.visible = true;
-				wrapper.draw();
-            }
-		}
 	}
 	
 	override public function drawDebugOnCamera(Camera:FlxCamera = null):Void
@@ -222,7 +211,7 @@ class FlxSpine extends FlxSprite
 	
 	public function get(regionAttachment:RegionAttachment):FlxSprite 
 	{
-        var wrapper:FlxSprite;
+		var wrapper:FlxSprite;
 		
 		if (sprites.exists(regionAttachment))
 		{
@@ -230,50 +219,38 @@ class FlxSpine extends FlxSprite
 		}
 		else
 		{
-            var region:AtlasRegion = cast regionAttachment.getRegion();
-            var texture:BitmapDataTexture = cast(region.getTexture(), BitmapDataTexture);
-            var bitmapData:BitmapData = texture.bd;
+			var region:AtlasRegion = cast regionAttachment.getRegion();
+			var texture:BitmapDataTexture = cast(region.getTexture(), BitmapDataTexture);
+			var bitmapData:BitmapData = texture.bd;
 			
 			var cached:CachedGraphicsObject = FlxG.bitmap.add(bitmapData);
 			var atlasRegion:SpriteSheetRegion = new SpriteSheetRegion(cached, region.getRegionX(), region.getRegionY());
 			
-            if (region.rotate) 
+			if (region.rotate) 
 			{
-                atlasRegion.region.tileWidth = atlasRegion.region.width = region.getRegionHeight();
+				atlasRegion.region.tileWidth = atlasRegion.region.width = region.getRegionHeight();
 				atlasRegion.region.tileHeight = atlasRegion.region.height = region.getRegionWidth();
-            } 
+			}
 			else 
 			{
-                atlasRegion.region.tileWidth = atlasRegion.region.width = region.getRegionWidth();
+				atlasRegion.region.tileWidth = atlasRegion.region.width = region.getRegionWidth();
 				atlasRegion.region.tileHeight = atlasRegion.region.height = region.getRegionHeight();
-            }
+			}
 			
-            wrapper = new FlxSprite(0, 0, atlasRegion);
-            wrapper.antialiasing = FlxG.antialiasByDefault;
+			wrapper = new FlxSprite(0, 0, atlasRegion);
+			wrapper.antialiasing = FlxG.antialiasByDefault;
 			wrapper.setOriginToCorner();
-            wrapper.origin.x = regionAttachment.width / 2; // Registration point.
-            wrapper.origin.y = regionAttachment.height / 2;
-            if (region.rotate) 
+			wrapper.origin.x = regionAttachment.width / 2; // Registration point.
+			wrapper.origin.y = regionAttachment.height / 2;
+			if (region.rotate) 
 			{
-                wrapper.angle = 90;
-                wrapper.origin.x -= region.getRegionWidth();
-            }
+				wrapper.angle = 90;
+				wrapper.origin.x -= region.getRegionWidth();
+			}
 			
 			spriteAngles.set(regionAttachment, wrapper.angle);
-            sprites.set(regionAttachment, wrapper);
-        }
-        return wrapper;
-    }
-	
-	// Debug renderer functionality
-	#if !FLX_NO_DEBUG
-	private var drawingMode:Int = 0;
-	private var DRAW_WITH_DEBUG:Int = 0;
-	private var DRAW_WITHOUT_DEBUG:Int = 1;
-	private var DRAW_DEBUG_ONLY:Int = 2;
-	public function setDrawingMode(drawWithDebugOrDrawWithoutDebugOrDrawDebugOnly:Int):Void
-	{
-		drawingMode = drawWithDebugOrDrawWithoutDebugOrDrawDebugOnly;
+			sprites.set(regionAttachment, wrapper);
+		}
+		return wrapper;
 	}
-	#end
 }
