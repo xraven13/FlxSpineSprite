@@ -63,7 +63,7 @@ class FlxSpine extends FlxSprite
 	{
 		super(X, Y);
 		
-		collider = new FlxObject();
+		collider = new FlxObject(X, Y);
 		
 		width = 0;
 		height = 0;
@@ -136,7 +136,7 @@ class FlxSpine extends FlxSprite
 		var flipY:Int = (skeleton.flipY) ? 1 : -1;
 		var flip:Int = flipX * flipY;
 		
-		_aabb.set(this.x, this.y, 0, 0);
+		_aabb.set(0, 0, 0, 0);
 		
 		for (slot in drawOrder) 
 		{
@@ -163,7 +163,14 @@ class FlxSpine extends FlxSprite
                 wrapper.visible = true;
 				wrapper.draw();
 				
-				_aabb.union(wrapper.aabb);
+				if (_aabb.width == 0 && _aabb.height == 0)
+				{
+					_aabb.copyFrom(wrapper.aabb);
+				}
+				else
+				{
+					_aabb.union(wrapper.aabb);
+				}
             }
 		}
 		
