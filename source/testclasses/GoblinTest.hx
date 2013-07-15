@@ -8,17 +8,13 @@ import spinehx.SkeletonData;
  * ...
  * @author Kris
  */
-class GoblinTest extends FlxSpineSprite
+class GoblinTest extends FlxSpine
 {
-
-	
-	private var animation:Animation;
-	private var time:Float = 0;
-	public function new( skeletonData:SkeletonData,  X:Float = 0, Y:Float = 0, Width:Int = 0, Height:Int = 0 ) 
+	public function new( skeletonData:SkeletonData,  X:Float = 0, Y:Float = 0) 
 	{
-		super( skeletonData, X, Y, Width, Height );
+		super(skeletonData, X, Y);
 		
-		animation = skeletonData.findAnimation("walk");
+		var animation = skeletonData.findAnimation("walk");
 		
 		skeleton.setSkinByName("goblin");
 		skeleton.setToSetupPose();
@@ -29,7 +25,7 @@ class GoblinTest extends FlxSpineSprite
 		skeleton.updateWorldTransform();
 	}
 	
-	override private function handleAnimations():Void
+	override public function update():Void
 	{
 		
 /*		var x:Float = skeleton.getX() + 160 * deltaTime * (skeleton.getFlipX() ? -1 : 1);
@@ -37,8 +33,6 @@ class GoblinTest extends FlxSpineSprite
 		if (x < 0) skeleton.setFlipX(false);
         skeleton.setX(x);*/
 
-		time += delta;
-		animation.apply(skeleton, time, true);
 		
 		if ( FlxG.mouse.justPressed() )
 		{
@@ -47,6 +41,8 @@ class GoblinTest extends FlxSpineSprite
 			skeleton.setSlotsToSetupPose();
 			 
 		}
+		
+		super.update();
 	}
 	
 }

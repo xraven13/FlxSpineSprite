@@ -44,7 +44,7 @@ class Main extends Sprite
 		#end
 		
 		// Profile code - disable <haxedef name="profile_cpp" if="target_cpp" /> before ship
-		#if (profile_cpp && !neko && !FLX_NO_DEBUG)
+		#if (profile_cpp && !neko)
 		cpp.vm.Profiler.start("perf.txt");
 		#end
 	}
@@ -55,9 +55,10 @@ class Main extends Sprite
 		if (e.keyCode == Keyboard.ESCAPE) 
 		{
 			// Profiling code - disable <haxedef name="profile_cpp" if="target_cpp" /> before ship
-			#if (profile_cpp && !neko && !FLX_NO_DEBUG)
+			#if (profile_cpp && !neko)
 			cpp.vm.Profiler.stop();
 			#end
+			
 			Lib.exit();
 		}
 	}
