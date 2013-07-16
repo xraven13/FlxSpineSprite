@@ -8,8 +8,11 @@ import flixel.FlxCamera;
 import flixel.FlxSprite;
 import flixel.FlxObject;
 import flixel.util.FlxAngle;
-import flixel.util.loaders.SpriteSheetRegion;
-import flixel.system.frontEnds.BitmapFrontEnd.CachedGraphicsObject;
+import flixel.util.loaders.CachedGraphics;
+import flixel.util.loaders.TextureRegion;
+
+import spineTexture.FlixelTexture;
+import spineTexture.FlixelTextureLoader;
 
 import spinehx.Bone;
 import spinehx.Slot;
@@ -21,8 +24,6 @@ import spinehx.AnimationStateData;
 import spinehx.atlas.TextureAtlas;
 import spinehx.attachments.Attachment;
 import spinehx.attachments.RegionAttachment;
-import spinehx.platform.nme.flixel.FlixelTexture;
-import spinehx.platform.nme.flixel.FlixelTextureLoader;
 
 /**
  * A Sprite that can play animations exported by Spine (http://esotericsoftware.com/)
@@ -251,8 +252,8 @@ class FlxSpine extends FlxSprite
 		var region:AtlasRegion = cast regionAttachment.getRegion();
 		var texture:FlixelTexture = cast region.getTexture();
 		
-		var cachedGraphic:CachedGraphicsObject = FlxG.bitmap.add(texture.bd);
-		var atlasRegion:SpriteSheetRegion = new SpriteSheetRegion(cachedGraphic, region.getRegionX(), region.getRegionY());
+		var cachedGraphic:CachedGraphics = FlxG.bitmap.add(texture.bd);
+		var atlasRegion:TextureRegion = new TextureRegion(cachedGraphic, region.getRegionX(), region.getRegionY());
 		
 		if (region.rotate) 
 		{
